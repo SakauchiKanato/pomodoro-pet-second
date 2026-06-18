@@ -25,8 +25,8 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        # 💡 エラーの原因となるWindows通知周りのDLLの自動収集を、--exclude-module で明示的に禁止します
-        pyinstaller --onedir --noconsole --exclude-module PyQt6.QtNetwork --exclude-module PyQt6.QtBluetooth --add-data "Focused_Corgi.png;." --add-data "Focused_Corgi_2.png;." --add-data "Focused_Corgi_3.png;." --add-data "Focused_Corgi_4.png;." --add-data "Hungry_Corgi.png;." --add-data "Hungry_Corgi_2.png;." --add-data "Hungry_Corgi_3.png;." --add-data "Hungry_Corgi_4.png;." --add-data "Satisfaction_Corgi.png;." pomodoro_pet.py
+        # 💡 画像のファイル名が少しでも変わっても追従できるよう、確実に "*.png" で全件同梱します
+        pyinstaller --onedir --noconsole --add-data "*.png;." pomodoro_pet.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
