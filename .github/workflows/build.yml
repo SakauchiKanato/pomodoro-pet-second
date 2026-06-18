@@ -24,20 +24,9 @@ jobs:
         pip install PyQt6 pillow pyinstaller
 
     - name: Build with PyInstaller
-      shell: bash
       run: |
-        # 💡 Windows環境のパス問題を完全に回避するため、明示的にカレントディレクトリ（./）からすべてのPNGを集めて同梱します
-        pyinstaller --onedir --noconsole \
-          --add-data "./Focused_Corgi.png;." \
-          --add-data "./Focused_Corgi_2.png;." \
-          --add-data "./Focused_Corgi_3.png;." \
-          --add-data "./Focused_Corgi_4.png;." \
-          --add-data "./Hungry_Corgi.png;." \
-          --add-data "./Hungry_Corgi_2.png;." \
-          --add-data "./Hungry_Corgi_3.png;." \
-          --add-data "./Hungry_Corgi_4.png;." \
-          --add-data "./Satisfaction_Corgi.png;." \
-          pomodoro_pet.py
+        # 💡 エラーの原因となるWindows通知周りのDLLの自動収集を、--exclude-module で明示的に禁止します
+        pyinstaller --onedir --noconsole --exclude-module PyQt6.QtNetwork --exclude-module PyQt6.QtBluetooth --add-data "Focused_Corgi.png;." --add-data "Focused_Corgi_2.png;." --add-data "Focused_Corgi_3.png;." --add-data "Focused_Corgi_4.png;." --add-data "Hungry_Corgi.png;." --add-data "Hungry_Corgi_2.png;." --add-data "Hungry_Corgi_3.png;." --add-data "Hungry_Corgi_4.png;." --add-data "Satisfaction_Corgi.png;." pomodoro_pet.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
