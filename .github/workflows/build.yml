@@ -9,7 +9,6 @@ jobs:
   build:
     runs-on: windows-latest
 
-  # 📋 最新のPyQt6 + 4枚アニメーション仕様に適合
   steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -26,7 +25,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onedir --noconsole --icon=Focused_Corgi.png --add-data "Focused_Corgi.png;." --add-data "Focused_Corgi_2.png;." --add-data "Focused_Corgi_3.png;." --add-data "Focused_Corgi_4.png;." --add-data "Hungry_Corgi.png;." --add-data "Hungry_Corgi_2.png;." --add-data "Hungry_Corgi_3.png;." --add-data "Hungry_Corgi_4.png;." pomodoro_pet.py
+        pyinstaller --onedir --noconsole --add-data "Focused_Corgi.png;." --add-data "Focused_Corgi_2.png;." --add-data "Focused_Corgi_3.png;." --add-data "Focused_Corgi_4.png;." --add-data "Hungry_Corgi.png;." --add-data "Hungry_Corgi_2.png;." --add-data "Hungry_Corgi_3.png;." --add-data "Hungry_Corgi_4.png;." --add-data "Satisfaction_Corgi.png;." pomodoro_pet.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
