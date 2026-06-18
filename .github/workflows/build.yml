@@ -1,0 +1,35 @@
+name: Build Windows Executable
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+  # 📋 最新のPyQt6 + 4枚アニメーション仕様に適合
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyQt6 pillow pyinstaller
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --onedir --noconsole --icon=Focused_Corgi.png --add-data "Focused_Corgi.png;." --add-data "Focused_Corgi_2.png;." --add-data "Focused_Corgi_3.png;." --add-data "Focused_Corgi_4.png;." --add-data "Hungry_Corgi.png;." --add-data "Hungry_Corgi_2.png;." --add-data "Hungry_Corgi_3.png;." --add-data "Hungry_Corgi_4.png;." pomodoro_pet.py
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Windows-PomodoroPet
+        path: dist/pomodoro_pet/
