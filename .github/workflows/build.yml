@@ -24,10 +24,9 @@ jobs:
         pip install PyQt6 pillow pyinstaller
 
     - name: Build with PyInstaller
-      # 💡 shell: cmd を指定することで、PowerShellによる記号の誤解釈（パースエラー）を完全に防ぎます
-      shell: cmd
+      # 💡 個別のファイル名ではなく「カレントディレクトリ全体（.）」を丸ごと投げ込むことで、タイポによるビルド停止を完全に防ぎます
       run: |
-        pyinstaller --onedir --noconsole --add-data "*.png;." pomodoro_pet.py
+        pyinstaller --onedir --noconsole --add-data ".;." pomodoro_pet.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
