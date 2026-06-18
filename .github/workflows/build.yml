@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: windows-latest
 
-  steps:
+    steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
@@ -24,9 +24,9 @@ jobs:
         pip install PyQt6 pillow pyinstaller
 
     - name: Build with PyInstaller
-      # 💡 個別のファイル名ではなく「カレントディレクトリ全体（.）」を丸ごと投げ込むことで、タイポによるビルド停止を完全に防ぎます
+      shell: cmd
       run: |
-        pyinstaller --onedir --noconsole --add-data ".;." pomodoro_pet.py
+        pyinstaller --onedir --noconsole --add-data "App_icon.png;." --add-data "Focused_Corgi.png;." --add-data "Focused_Corgi_2.png;." --add-data "Focused_Corgi_3.png;." --add-data "Focused_Corgi_4.png;." --add-data "Hungry_Corgi.png;." --add-data "Hungry_Corgi_2.png;." --add-data "Hungry_Corgi_3.png;." --add-data "Hungry_Corgi_4.png;." --add-data "Satisfaction_Corgi.png;." pomodoro_pet.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
