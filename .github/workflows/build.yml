@@ -21,13 +21,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # 💡 バージョン固定を解除し、最新の安定環境を構築します
         pip install PyQt6 pillow pyinstaller
 
-    - name: Build with PyInstaller
+    - name: Build with PyInstaller Spec
       run: |
-        # 💡 クラッシュの原因となる --collect-all を削除し、PyInstaller本来の自動解析に任せます
-        pyinstaller --onedir --noconsole --add-data "Focused_Corgi.png;." --add-data "Focused_Corgi_2.png;." --add-data "Focused_Corgi_3.png;." --add-data "Focused_Corgi_4.png;." --add-data "Hungry_Corgi.png;." --add-data "Hungry_Corgi_2.png;." --add-data "Hungry_Corgi_3.png;." --add-data "Hungry_Corgi_4.png;." --add-data "Satisfaction_Corgi.png;." pomodoro_pet.py
+        # 💡 スクリプト直接ではなく、用意した指示書ファイル (.spec) を指定して確実にビルドさせます
+        pyinstaller pomodoro_pet.spec
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
