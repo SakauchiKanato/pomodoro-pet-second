@@ -208,6 +208,8 @@ class PomodoroPetApp:
         self.update_icon()
 
     def run(self):
+        # 💡 Windowsでの強制終了を防ぐため、ウインドウがゼロでもアプリを維持する設定を追加します
+        self.app.setQuitOnLastWindowClosed(False)
         sys.exit(self.app.exec())
 
 if __name__ == "__main__":
