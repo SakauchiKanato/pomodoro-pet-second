@@ -21,11 +21,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install PyQt6 pillow pyinstaller
+        # 💡 PyQt6のビルドエラーを防ぐため、安全性の高い pyinstaller のバージョンを明示指定します
+        pip install PyQt6 pillow pyinstaller==6.3.0
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onedir --noconsole --add-data "Focused_Corgi.png;." --add-data "Focused_Corgi_2.png;." --add-data "Focused_Corgi_3.png;." --add-data "Focused_Corgi_4.png;." --add-data "Hungry_Corgi.png;." --add-data "Hungry_Corgi_2.png;." --add-data "Hungry_Corgi_3.png;." --add-data "Hungry_Corgi_4.png;." --add-data "Satisfaction_Corgi.png;." pomodoro_pet.py
+        # 💡 PyQt6の内部システム（プラグインやDLL）を漏れなくEXEに同梱させるため、--collect-all PyQt6 を追加します
+        pyinstaller --onedir --noconsole --collect-all PyQt6 --add-data "Focused_Corgi.png;." --add-data "Focused_Corgi_2.png;." --add-data "Focused_Corgi_3.png;." --add-data "Focused_Corgi_4.png;." --add-data "Hungry_Corgi.png;." --add-data "Hungry_Corgi_2.png;." --add-data "Hungry_Corgi_3.png;." --add-data "Hungry_Corgi_4.png;." --add-data "Satisfaction_Corgi.png;." pomodoro_pet.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
