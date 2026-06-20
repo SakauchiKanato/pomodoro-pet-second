@@ -13,14 +13,17 @@ def get_resource_path(relative_path):
 class PomodoroPetApp:
     def __init__(self):
         self.app = QApplication(sys.argv)
+        # Windowsのタスクバー終了対策：ウインドウがゼロでもアプリを維持する
+        self.app.setQuitOnLastWindowClosed(False)
         
-        # ⏱️ 調整可能なパラメータ（デフォルト値）
+        # ⏱️ パラメータ設定（デフォルト値）
         self.selected_focus_duration = 1500  # 25分
         self.selected_rest_duration = 300    # 5分
         
         self.remaining_time = self.selected_focus_duration
         self.is_focus_mode = True
         self.is_running = False
+        self.is_paused = False
         
         # 🐕 アニメーション管理
         self.animation_index = 1
@@ -37,7 +40,7 @@ class PomodoroPetApp:
         self.timer = QTimer()
         self.timer.timeout.connect(self.countdown)
         
-        # 🏃 2. コーギーを早く走らせるための高速タイマー（0.18秒ごと）
+        # 🏃 2. コーギーを走らせるための高速タイマー（0.18秒ごと）
         self.animation_timer = QTimer()
         self.animation_timer.timeout.connect(self.advance_animation)
         
@@ -45,18 +48,20 @@ class PomodoroPetApp:
         self.update_tooltip()
 
     def construct_menu(self):
-        """元のSwiftコードのメニュー構成を完全再現"""
         self.menu.clear()
         
         # スタート / 一時停止 / 再開ボタンの動的切り替え
         if not self.is_running:
             if self.remaining_time == self.selected_focus_duration and self.is_focus_mode:
-                self.start_action = self.menu.addAction("タイマースタート", self.start_timer)
+                self.menu.addAction("タイマースタート", self.start_timer)
             else:
-                self.start_action = self.menu.addAction("タイマーを再開", self.start_timer)
+                self.menu.addAction("タイマーを再開", self.start_timer)
         else:
-            self.start_action = self.menu.addAction("一時停止", self.pause_timer)
-            
+            if self.is_paused:
+                self.menu.addAction("タイマーを再開", self.start_timer)
+            else:
+                self.menu.addAction("一時停止", self.pause_timer)
+                
         # リセットボタン
         self.menu.addAction("リセット", self.reset_timer)
         self.menu.addSeparator()
@@ -95,7 +100,6 @@ class PomodoroPetApp:
         action = self.sender()
         if action:
             self.selected_focus_duration = action.data()
-            # Swiftのロジックを再現：タイマー停止中、または集中モード稼働中ならリセット
             if not self.is_running or self.is_focus_mode:
                 self.reset_timer()
             else:
@@ -105,7 +109,6 @@ class PomodoroPetApp:
         action = self.sender()
         if action:
             self.selected_rest_duration = action.data()
-            # Swiftのロジックを再現：タイマー稼働中かつ休憩モード中ならリセット
             if self.is_running and not self.is_focus_mode:
                 self.reset_timer()
             else:
@@ -119,7 +122,7 @@ class PomodoroPetApp:
             elif self.remaining_time <= 300:
                 base_image_name = "Hungry_Corgi"
                 
-            if self.is_running and self.remaining_time > 0 and base_image_name != "Satisfaction_Corgi":
+            if self.is_running and not self.is_paused and self.remaining_time > 0 and base_image_name != "Satisfaction_Corgi":
                 if self.animation_index > 1:
                     img_name = f"{base_image_name}_{self.animation_index}.png"
                 else:
@@ -127,7 +130,7 @@ class PomodoroPetApp:
             else:
                 img_name = f"{base_image_name}.png"
         else:
-            # 休憩モード中の画像切り替え（画像がない場合はフォールバックされます）
+            # 休憩モード中の画像切り替え（Swift版のフォールバック仕様を再現）
             if self.remaining_time == 0:
                 img_name = "Ready_Corgi.png"
             else:
@@ -137,6 +140,7 @@ class PomodoroPetApp:
         if os.path.exists(full_path):
             self.tray_icon.setIcon(QIcon(full_path))
         else:
+            # 画像ファイルが見つからない場合のWindows標準警告用アイコン（ビルドエラー防止）
             self.tray_icon.setIcon(QSystemTrayIcon.MessageIcon.Information)
 
     def update_tooltip(self):
@@ -147,25 +151,28 @@ class PomodoroPetApp:
         self.tray_icon.setToolTip(f"ポモドーロペット [{mode_str}] - {time_str}")
 
     def start_timer(self):
-        if not self.is_running:
-            self.is_running = True
-            self.timer.start(1000)
-            self.animation_timer.start(180) # 0.18秒
-            self.construct_menu()
-            self.update_icon()
+        self.is_running = True
+        self.is_paused = False
+        self.timer.start(1000)
+        
+        if self.is_focus_mode:
+            self.restart_animation_timer()
+            
+        self.construct_menu()
+        self.update_icon()
 
     def pause_timer(self):
-        if self.is_running:
-            self.is_running = False
-            self.timer.stop()
-            self.animation_timer.stop()
-            self.construct_menu()
-            self.update_icon()
+        self.is_paused = True
+        self.timer.stop()
+        self.animation_timer.stop()
+        self.construct_menu()
+        self.update_icon()
 
     def reset_timer(self):
         self.timer.stop()
         self.animation_timer.stop()
         self.is_running = False
+        self.is_paused = False
         self.is_focus_mode = True
         self.remaining_time = self.selected_focus_duration
         self.animation_index = 1
@@ -180,24 +187,26 @@ class PomodoroPetApp:
             if self.remaining_time == 300 or self.remaining_time == 0:
                 self.update_icon()
         else:
-            self.timer.stop()
+            # 💡 Swift版と同様に、タイマーのループ自体は止めずに画像管理だけをリセット
             self.animation_timer.stop()
-            self.is_running = False
             self.animation_index = 1
             
             if self.is_focus_mode:
+                # 集中終了 -> 休憩モードへ自動移行
                 self.is_focus_mode = False
                 self.remaining_time = self.selected_rest_duration
                 self.update_icon()
                 self.update_tooltip()
                 self.tray_icon.showMessage("🐶 集中終了！", "休憩の時間だワン！しっかり休んでね。", QSystemTrayIcon.MessageIcon.Information, 5000)
             else:
+                # 休憩終了 -> 集中モードへ自動移行
                 self.is_focus_mode = True
                 self.remaining_time = self.selected_focus_duration
                 self.update_icon()
                 self.update_tooltip()
                 self.tray_icon.showMessage("🐶 休憩終了！", "お休み終了だワン！また一緒に集中しよう！", QSystemTrayIcon.MessageIcon.Information, 5000)
-            
+                self.restart_animation_timer()
+                
             self.construct_menu()
 
     def advance_animation(self):
@@ -207,9 +216,11 @@ class PomodoroPetApp:
             self.animation_index += 1
         self.update_icon()
 
+    def restart_animation_timer(self):
+        self.animation_timer.stop()
+        self.animation_timer.start(180)  # 0.18秒
+
     def run(self):
-        # 💡 Windowsでの強制終了を防ぐため、ウインドウがゼロでもアプリを維持する設定を追加します
-        self.app.setQuitOnLastWindowClosed(False)
         sys.exit(self.app.exec())
 
 if __name__ == "__main__":
